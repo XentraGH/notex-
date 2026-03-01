@@ -91,6 +91,7 @@ export default function NoteXApp() {
   const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Form states
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -1101,9 +1102,9 @@ export default function NoteXApp() {
 
   // Dashboard
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex">
-      {/* Sidebar */}
-      <div className="w-[270px] bg-white border-r border-slate-200 flex flex-col h-screen fixed left-0 top-0">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col md:flex-row">
+      {/* Sidebar - Hidden on mobile, shown on desktop */}
+      <div className="hidden md:flex w-[270px] bg-white border-r border-slate-200 flex-col h-screen fixed left-0 top-0">
         {/* Logo */}
         <div className="p-4 border-b border-slate-200">
           <div className="flex items-center gap-3">
@@ -1305,7 +1306,42 @@ export default function NoteXApp() {
       </div>
 
       {/* Main Content */}
-      <div className="ml-[270px] flex-1 h-screen overflow-hidden">
+      <div className="md:ml-[270px] flex-1 h-screen overflow-hidden pb-20 md:pb-0">
+        {/* Mobile Header */}
+        <div className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-2">
+            <Image src="/notex-icon.png" alt="NoteX" width={28} height={28} className="object-contain" />
+            <span className="font-bold text-slate-800">NoteX</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowNotifications(true)}
+              className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg relative"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              {notifications.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => { openSettings(); }}
+              className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center"
+            >
+              {user?.profilePicture ? (
+                <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+        
         {showAdminPanel ? (
           // Admin Panel
           <div className="h-full flex flex-col">
@@ -2069,6 +2105,122 @@ export default function NoteXApp() {
                   Apply
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Bottom Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 z-40">
+        <div className="flex items-center justify-around">
+          <button
+            onClick={() => setShowMobileMenu(true)}
+            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-colors cursor-pointer text-slate-400 hover:text-slate-600"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="text-xs font-medium">Notes</span>
+          </button>
+          
+          <button
+            onClick={createNote}
+            className="flex items-center justify-center w-14 h-14 -mt-6 bg-violet-600 text-white rounded-2xl shadow-lg shadow-violet-500/30 hover:bg-violet-700 transition-all cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={() => openSettings()}
+            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-colors cursor-pointer text-slate-400 hover:text-slate-600"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs font-medium">Settings</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Drawer */}
+      {showMobileMenu && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setShowMobileMenu(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] overflow-hidden animate-slide-up">
+            <div className="flex justify-center py-3">
+              <div className="w-10 h-1 bg-slate-300 rounded-full" />
+            </div>
+            
+            <div className="px-4 pb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+                  {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-800 truncate">{user?.name}</p>
+                  <p className="text-sm text-slate-500 truncate">@{user?.username}</p>
+                </div>
+                <button onClick={() => { openSettings(); setShowMobileMenu(false); }} className="p-2 text-slate-400 hover:text-slate-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
+              
+              {user?.isAdmin && (
+                <button
+                  onClick={() => { setShowAdminPanel(!showAdminPanel); setShowMobileMenu(false); setSelectedNote(null); }}
+                  className={`w-full mb-3 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer ${showAdminPanel ? 'bg-amber-100 text-amber-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  {showAdminPanel ? 'Back to Notes' : 'Admin Panel'}
+                </button>
+              )}
+              
+              <div className="pt-2 pb-4 max-h-[50vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-slate-500">Your Notes</span>
+                  <span className="text-xs text-slate-400">{notes.length}</span>
+                </div>
+                
+                <div className="space-y-1">
+                  {filteredNotes.map((note) => (
+                    <button
+                      key={note.id}
+                      onClick={() => { selectNote(note); setShowMobileMenu(false); }}
+                      className={`w-full text-left px-3 py-3 rounded-xl transition-colors cursor-pointer ${selectedNote?.id === note.id ? 'bg-violet-50 border border-violet-200' : 'bg-slate-50 hover:bg-slate-100'}`}
+                    >
+                      <div className="flex items-center gap-2">
+                        {note.isLocked && <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
+                        <span className="font-medium text-slate-800 truncate flex-1">{note.title}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">{new Date(note.updatedAt).toLocaleDateString()}</p>
+                    </button>
+                  ))}
+                  {filteredNotes.length === 0 && <p className="text-sm text-slate-400 text-center py-4">No notes yet</p>}
+                </div>
+              </div>
+              
+              <button onClick={handleLogout} className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors cursor-pointer flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
             </div>
           </div>
         </div>
