@@ -1,0 +1,17 @@
+# NoteX Desktop App Dependencies
+# Python 3.9+ required
+
+# Core UI Framework (includes all dependencies)
+flet>=0.21.0
+flet-core>=0.21.0
+
+# HTTP Client for API calls
+httpx>=0.25.0
+
+# Already included in Python standard library:
+# - asyncio
+# - json
+# - os
+# - hashlib
+# - datetime
+# - typing

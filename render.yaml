@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    env: node
+    startCommand: bun run start
+    plan: free
+    disk:
+      name: data
+      mountPath: /home/z/my-project/db
+      sizeGB: 1

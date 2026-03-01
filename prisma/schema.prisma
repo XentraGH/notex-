@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                String        @id @default(cuid())
+  name              String
+  username          String        @unique
+  password          String
+  profilePicture    String?
+  defaultNoteName   String        @default("Untitled Note")
+  isAdmin           Boolean       @default(false)
+  isBanned          Boolean       @default(false)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  notes             Note[]
+  sentShares        SharedNote[]  @relation("SentShares")
+  receivedShares    SharedNote[]  @relation("ReceivedShares")
+}
+
+model Note {
+  id          String       @id @default(cuid())
+  title       String
+  content     String       @default("")
+  isLocked    Boolean      @default(false)
+  password    String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  authorId    String
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  shares      SharedNote[]
+}
+
+model SharedNote {
+  id          String   @id @default(cuid())
+  noteId      String
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  senderId    String
+  sender      User     @relation("SentShares", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User     @relation("ReceivedShares", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      String   @default("pending") // "pending", "accepted", "rejected"
+  createdAt   DateTime @default(now())
+}
