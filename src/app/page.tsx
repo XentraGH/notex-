@@ -659,22 +659,55 @@ export default function NoteXApp() {
     toast({ title: 'Copied!', description: 'All user data copied to clipboard', variant: 'success' });
   };
 
-  // Handle profile picture upload
+  // Handle profile picture upload (no cropping - just resize)
   const handleProfilePictureUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'signup' | 'settings') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64 = reader.result as string;
-        // Open crop modal
-        setCropImage(base64);
-        setCropTarget(target);
-        setCropZoom(1);
-        setCropPosition({ x: 0, y: 0 });
-        // Update refs for applyCrop
-        cropZoomRef.current = 1;
-        cropPositionRef.current = { x: 0, y: 0 };
-        setShowCropModal(true);
+        
+        // Resize image to 200x200 without cropping
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          
+          const outputSize = 200;
+          canvas.width = outputSize;
+          canvas.height = outputSize;
+          
+          // Calculate scale to fit within 200x200 while maintaining aspect ratio
+          const scale = Math.min(outputSize / img.width, outputSize / img.height);
+          const scaledWidth = img.width * scale;
+          const scaledHeight = img.height * scale;
+          
+          // Center the image
+          const x = (outputSize - scaledWidth) / 2;
+          const y = (outputSize - scaledHeight) / 2;
+          
+          // Fill with white background
+          ctx.fillStyle = '#f1f5f9';
+          ctx.fillRect(0, 0, outputSize, outputSize);
+          
+          // Draw scaled image centered
+          ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+          
+          const resizedBase64 = canvas.toDataURL('image/png');
+          
+          if (target === 'signup') {
+            setSignupForm({ ...signupForm, profilePicture: resizedBase64 });
+          } else {
+            setSettingsForm({ ...settingsForm, profilePicture: resizedBase64 });
+          }
+          
+          toast({ title: 'Profile picture updated!', variant: 'success' });
+        };
+        img.onerror = () => {
+          toast({ title: 'Error', description: 'Failed to process image', variant: 'destructive' });
+        };
+        img.src = base64;
       };
       reader.readAsDataURL(file);
     }
@@ -889,7 +922,7 @@ export default function NoteXApp() {
             <Image src="/notex-icon.png" alt="NoteX" width={100} height={100} className="object-contain" />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 mb-2">NoteX</h1>
-          <p className="text-slate-500 mb-6">Your simple note taker</p>
+          <p className="text-slate-500 mb-6">Create and save your notes online</p>
           
           <div className="text-left space-y-3 mb-6">
             <div className="flex items-center gap-3 text-slate-600">
@@ -1029,7 +1062,7 @@ export default function NoteXApp() {
               <label className="cursor-pointer">
                 <div className="w-24 h-24 rounded-full bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden hover:border-violet-500 transition-colors">
                   {signupForm.profilePicture ? (
-                    <img src={signupForm.profilePicture} alt="Profile" className="object-contain" />
+                    <img src={signupForm.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1255,7 +1288,7 @@ export default function NoteXApp() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                 {user?.profilePicture ? (
-                  <img src={user.profilePicture} alt="Profile" className="object-contain" />
+                  <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1374,7 +1407,7 @@ export default function NoteXApp() {
                         <td className="px-4 py-3">
                           <div className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden">
                             {u.profilePicture ? (
-                              <img src={u.profilePicture} alt="" className="object-contain" />
+                              <img src={u.profilePicture} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-slate-400">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1604,7 +1637,7 @@ export default function NoteXApp() {
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-8 h-8 rounded-lg bg-slate-200 overflow-hidden flex-shrink-0">
                         {notification.sender.profilePicture ? (
-                          <img src={notification.sender.profilePicture} alt="" className="object-contain" />
+                          <img src={notification.sender.profilePicture} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-400">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1660,9 +1693,9 @@ export default function NoteXApp() {
             <form onSubmit={updateSettings} className="p-6 space-y-4">
               <div className="flex justify-center">
                 <label className="cursor-pointer relative">
-                  <div className="w-24 h-24 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden hover:border-violet-500 transition-colors">
+                  <div className="w-24 h-24 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden hover:border-violet-500 transition-colors">
                     {settingsForm.profilePicture ? (
-                      <img src={settingsForm.profilePicture} alt="Profile" className="object-contain" />
+                      <img src={settingsForm.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1790,7 +1823,7 @@ export default function NoteXApp() {
                   >
                     <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                       {u.profilePicture ? (
-                        <img src={u.profilePicture} alt="" className="object-contain" />
+                        <img src={u.profilePicture} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-400">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
