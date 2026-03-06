@@ -93,6 +93,54 @@ export default function NoteXApp() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNoteSettings, setShowNoteSettings] = useState(false);
+  const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+
+  // Markdown to HTML converter
+  const markdownToHtml = (markdown: string): string => {
+    if (!markdown) return '';
+    
+    let html = markdown
+      // Escape HTML
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      // Code blocks (must be before inline code)
+      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-slate-100 p-3 rounded-lg overflow-x-auto my-2"><code>$2</code></pre>')
+      // Inline code
+      .replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">$1</code>')
+      // Headers
+      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>')
+      // Bold and Italic
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+      .replace(/___(.*?)___/g, '<strong><em>$1</em></strong>')
+      .replace(/__(.*?)__/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/_(.*?)_/g, '<em class="italic">$1</em>')
+      // Strikethrough
+      .replace(/~~(.*?)~~/g, '<del class="line-through text-slate-400">$1</del>')
+      // Blockquotes
+      .replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-violet-400 pl-4 my-2 text-slate-600 italic">$1</blockquote>')
+      // Horizontal rule
+      .replace(/^---$/gim, '<hr class="my-4 border-slate-200" />')
+      // Unordered lists
+      .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+      .replace(/^- (.*$)/gim, '<li class="ml-4 list-disc">$1</li>')
+      // Ordered lists
+      .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-violet-600 hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+      // Images
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-2" />')
+      // Line breaks - convert double newline to paragraph
+      .replace(/\n\n/g, '</p><p class="my-2">')
+      // Single line break
+      .replace(/\n/g, '<br />');
+    
+    return `<div class="markdown-content"><p class="my-2">${html}</p></div>`;
+  };
 
   // Form states
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -1526,6 +1574,18 @@ export default function NoteXApp() {
                   </svg>
                 </button>
                 
+                {/* Markdown Preview Toggle */}
+                <button
+                  onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+                  className={`p-2 rounded-lg transition-colors cursor-pointer ${showMarkdownPreview ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+                  title={showMarkdownPreview ? 'Edit Markdown' : 'Preview Markdown'}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+                
                 {/* Note Settings Dropdown */}
                 <div className="relative">
                   <button
@@ -1600,16 +1660,23 @@ export default function NoteXApp() {
             </div>
 
             {/* Note Content */}
-            <div className="flex-1 p-4">
+            <div className="flex-1 p-4 overflow-auto">
               {isNoteUnlocked ? (
-                <textarea
-                  ref={noteContentRef}
-                  dir="ltr"
-                  value={selectedNote.content}
-                  onChange={handleContentChange}
-                  className="w-full h-full resize-none focus:outline-none text-slate-700 leading-relaxed"
-                  placeholder="Start typing your note..."
-                />
+                showMarkdownPreview ? (
+                  <div 
+                    className="prose prose-slate max-w-none"
+                    dangerouslySetInnerHTML={{ __html: markdownToHtml(selectedNote.content) }}
+                  />
+                ) : (
+                  <textarea
+                    ref={noteContentRef}
+                    dir="ltr"
+                    value={selectedNote.content}
+                    onChange={handleContentChange}
+                    className="w-full h-full resize-none focus:outline-none text-slate-700 leading-relaxed"
+                    placeholder="Start typing your note... (Markdown supported)"
+                  />
+                )
               ) : (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
