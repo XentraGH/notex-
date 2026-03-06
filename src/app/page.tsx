@@ -94,6 +94,8 @@ export default function NoteXApp() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showNoteSettings, setShowNoteSettings] = useState(false);
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+  const [isCodingMode, setIsCodingMode] = useState(false);
+  const [codeLanguage, setCodeLanguage] = useState('javascript');
 
   // Markdown to HTML converter
   const markdownToHtml = (markdown: string): string => {
@@ -162,33 +164,21 @@ export default function NoteXApp() {
         newText = `*${selectedText || 'italic text'}*`;
         cursorOffset = selectedText ? newText.length : 1;
         break;
-      case 'heading':
-        newText = `# ${selectedText || 'Heading'}`;
+      case 'h1':
+        newText = `# ${selectedText || 'Heading 1'}`;
+        cursorOffset = newText.length;
+        break;
+      case 'h2':
+        newText = `## ${selectedText || 'Heading 2'}`;
+        cursorOffset = newText.length;
+        break;
+      case 'h3':
+        newText = `### ${selectedText || 'Heading 3'}`;
         cursorOffset = newText.length;
         break;
       case 'link':
         newText = `[${selectedText || 'link text'}](url)`;
         cursorOffset = selectedText ? newText.length - 4 : 1;
-        break;
-      case 'code':
-        newText = `\`${selectedText || 'code'}\``;
-        cursorOffset = selectedText ? newText.length : 1;
-        break;
-      case 'codeblock':
-        newText = `\`\`\`\n${selectedText || 'code'}\n\`\`\``;
-        cursorOffset = selectedText ? newText.length : 4;
-        break;
-      case 'list':
-        newText = `- ${selectedText || 'list item'}`;
-        cursorOffset = newText.length;
-        break;
-      case 'quote':
-        newText = `> ${selectedText || 'quote'}`;
-        cursorOffset = newText.length;
-        break;
-      case 'strikethrough':
-        newText = `~~${selectedText || 'strikethrough'}~~`;
-        cursorOffset = selectedText ? newText.length : 2;
         break;
       default:
         return;
@@ -202,7 +192,6 @@ export default function NoteXApp() {
     setNotes(notes.map(n => n.id === selectedNote.id ? updatedNote : n));
     debouncedSave(selectedNote.id, selectedNote.title, updatedContent);
 
-    // Set cursor position
     setTimeout(() => {
       textarea.focus();
       const newCursorPos = start + cursorOffset;
@@ -1642,91 +1631,6 @@ export default function NoteXApp() {
                   </svg>
                 </button>
                 
-                {/* Markdown Formatting Buttons */}
-                <div className="flex items-center gap-1 px-2 border-l border-slate-200 ml-2 pl-3">
-                  <button
-                    onClick={() => insertMarkdown('bold')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer font-bold text-sm"
-                    title="Bold (Ctrl+B)"
-                  >
-                    B
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('italic')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer italic text-sm"
-                    title="Italic (Ctrl+I)"
-                  >
-                    I
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('heading')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer font-bold text-sm"
-                    title="Heading"
-                  >
-                    H
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('strikethrough')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer line-through text-sm"
-                    title="Strikethrough"
-                  >
-                    S
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('link')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                    title="Link"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('code')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer font-mono text-xs"
-                    title="Inline Code"
-                  >
-                    {'</>'}
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('codeblock')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                    title="Code Block"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('list')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                    title="List"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => insertMarkdown('quote')}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors cursor-pointer"
-                    title="Quote"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-                    className={`p-1.5 rounded transition-colors cursor-pointer ${showMarkdownPreview ? 'text-violet-600 bg-violet-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
-                    title={showMarkdownPreview ? 'Edit' : 'Preview'}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
-                </div>
-                
                 {/* Note Settings Dropdown */}
                 <div className="relative">
                   <button
@@ -1743,56 +1647,95 @@ export default function NoteXApp() {
                   {showNoteSettings && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowNoteSettings(false)} />
-                      <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
-                        {/* Lock Option */}
-                        <button
-                          onClick={() => {
-                            if (isGuestMode) {
-                              setShowGuestLimitPopup(true);
+                      <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-xl shadow-lg border border-slate-200 z-50 overflow-hidden">
+                        {/* Menu Sections */}
+                        <div className="p-2">
+                          {/* Lock Section */}
+                          <button
+                            onClick={() => {
+                              if (isGuestMode) {
+                                setShowGuestLimitPopup(true);
+                              } else if (selectedNote.isLocked) {
+                                removeLock();
+                              } else {
+                                setShowLockModal(true);
+                              }
                               setShowNoteSettings(false);
-                              return;
-                            }
-                            if (selectedNote.isLocked) {
-                              removeLock();
-                            } else {
-                              setShowLockModal(true);
-                            }
-                            setShowNoteSettings(false);
-                          }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center gap-3"
-                        >
-                          {selectedNote.isLocked ? (
-                            <>
-                              <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            }}
+                            className="w-full px-3 py-2.5 text-left hover:bg-slate-50 rounded-lg flex items-center gap-3 transition-colors"
+                          >
+                            {selectedNote.isLocked ? (
+                              <>
+                                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-slate-700 font-medium text-sm">Unlock Note</p>
+                                  <p className="text-slate-400 text-xs">Remove password protection</p>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                                  <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-slate-700 font-medium text-sm">Lock Note</p>
+                                  <p className="text-slate-400 text-xs">Add password protection</p>
+                                </div>
+                              </>
+                            )}
+                          </button>
+                          
+                          {/* Coding Mode Section */}
+                          <button
+                            onClick={() => {
+                              setIsCodingMode(!isCodingMode);
+                              setShowNoteSettings(false);
+                            }}
+                            className="w-full px-3 py-2.5 text-left hover:bg-slate-50 rounded-lg flex items-center gap-3 transition-colors"
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCodingMode ? 'bg-violet-100' : 'bg-slate-100'}`}>
+                              <svg className={`w-4 h-4 ${isCodingMode ? 'text-violet-600' : 'text-slate-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                               </svg>
-                              <span className="text-slate-700">Remove Lock</span>
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-slate-700 font-medium text-sm">Coding Mode</p>
+                              <p className="text-slate-400 text-xs">Code editor with syntax</p>
+                            </div>
+                            <div className={`w-10 h-6 rounded-full transition-colors ${isCodingMode ? 'bg-violet-600' : 'bg-slate-200'}`}>
+                              <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform mt-0.5 ${isCodingMode ? 'translate-x-4.5 ml-0.5' : 'ml-0.5'}`} />
+                            </div>
+                          </button>
+                        </div>
+                        
+                        <div className="border-t border-slate-100" />
+                        
+                        {/* Danger Zone */}
+                        <div className="p-2">
+                          <button
+                            onClick={() => {
+                              setShowDeleteConfirm(true);
+                              setShowNoteSettings(false);
+                            }}
+                            className="w-full px-3 py-2.5 text-left hover:bg-red-50 rounded-lg flex items-center gap-3 transition-colors"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
-                              <span className="text-slate-700">Lock Note</span>
-                            </>
-                          )}
-                        </button>
-                        
-                        <div className="border-t border-slate-100 my-2" />
-                        
-                        {/* Delete Option */}
-                        <button
-                          onClick={() => {
-                            setShowDeleteConfirm(true);
-                            setShowNoteSettings(false);
-                          }}
-                          className="w-full px-4 py-2.5 text-left hover:bg-red-50 flex items-center gap-3"
-                        >
-                          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          <span className="text-red-600">Delete Note</span>
-                        </button>
+                            </div>
+                            <div>
+                              <p className="text-red-600 font-medium text-sm">Delete Note</p>
+                              <p className="text-slate-400 text-xs">Permanently remove</p>
+                            </div>
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}
@@ -1800,12 +1743,118 @@ export default function NoteXApp() {
               </div>
             </div>
 
+            {/* Markdown Toolbar */}
+            {!isCodingMode && isNoteUnlocked && (
+              <div className="px-4 py-2 border-b border-slate-100 flex items-center gap-1 bg-slate-50">
+                <button
+                  onClick={() => insertMarkdown('h1')}
+                  className="px-2 py-1 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                  title="Heading 1"
+                >
+                  H1
+                </button>
+                <button
+                  onClick={() => insertMarkdown('h2')}
+                  className="px-2 py-1 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                  title="Heading 2"
+                >
+                  H2
+                </button>
+                <button
+                  onClick={() => insertMarkdown('h3')}
+                  className="px-2 py-1 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                  title="Heading 3"
+                >
+                  H3
+                </button>
+                <div className="w-px h-4 bg-slate-300 mx-1" />
+                <button
+                  onClick={() => insertMarkdown('bold')}
+                  className="px-2 py-1 text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                  title="Bold"
+                >
+                  B
+                </button>
+                <button
+                  onClick={() => insertMarkdown('italic')}
+                  className="px-2 py-1 text-xs italic text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                  title="Italic"
+                >
+                  I
+                </button>
+                <div className="w-px h-4 bg-slate-300 mx-1" />
+                <button
+                  onClick={() => insertMarkdown('link')}
+                  className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-200 rounded transition-colors cursor-pointer"
+                  title="Link"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </button>
+                <div className="flex-1" />
+                <button
+                  onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+                  className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors cursor-pointer ${showMarkdownPreview ? 'text-violet-600 bg-violet-100' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200'}`}
+                  title={showMarkdownPreview ? 'Edit' : 'Preview'}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  {showMarkdownPreview ? 'Edit' : 'Preview'}
+                </button>
+              </div>
+            )}
+
+            {/* Coding Mode Language Bar */}
+            {isCodingMode && isNoteUnlocked && (
+              <div className="px-4 py-2 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
+                <span className="text-xs text-slate-400">Language:</span>
+                <select
+                  value={codeLanguage}
+                  onChange={(e) => setCodeLanguage(e.target.value)}
+                  className="text-xs bg-white border border-slate-200 rounded px-2 py-1 text-slate-600 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                >
+                  <option value="javascript">JavaScript</option>
+                  <option value="typescript">TypeScript</option>
+                  <option value="python">Python</option>
+                  <option value="html">HTML</option>
+                  <option value="css">CSS</option>
+                  <option value="json">JSON</option>
+                  <option value="markdown">Markdown</option>
+                  <option value="sql">SQL</option>
+                  <option value="bash">Bash</option>
+                </select>
+              </div>
+            )}
+
             {/* Note Content */}
-            <div className="flex-1 p-4 overflow-auto">
+            <div className="flex-1 overflow-auto flex">
               {isNoteUnlocked ? (
-                showMarkdownPreview ? (
+                isCodingMode ? (
+                  // Coding Mode Editor
+                  <div className="flex-1 flex bg-slate-900">
+                    {/* Line Numbers */}
+                    <div className="w-12 bg-slate-800 text-slate-500 text-right pr-3 pt-4 font-mono text-sm select-none overflow-hidden">
+                      {selectedNote.content.split('\n').map((_, i) => (
+                        <div key={i} className="leading-6">{i + 1}</div>
+                      ))}
+                    </div>
+                    {/* Code Editor */}
+                    <textarea
+                      ref={noteContentRef}
+                      dir="ltr"
+                      value={selectedNote.content}
+                      onChange={handleContentChange}
+                      className="flex-1 bg-slate-900 text-slate-100 resize-none focus:outline-none font-mono text-sm leading-6 p-4"
+                      placeholder={`// Start coding in ${codeLanguage}...`}
+                      spellCheck={false}
+                    />
+                  </div>
+                ) : showMarkdownPreview ? (
                   <div 
-                    className="prose prose-slate max-w-none"
+                    className="flex-1 p-4 prose prose-slate max-w-none"
                     dangerouslySetInnerHTML={{ __html: markdownToHtml(selectedNote.content) }}
                   />
                 ) : (
@@ -1814,12 +1863,12 @@ export default function NoteXApp() {
                     dir="ltr"
                     value={selectedNote.content}
                     onChange={handleContentChange}
-                    className="w-full h-full resize-none focus:outline-none text-slate-700 leading-relaxed"
+                    className="flex-1 p-4 resize-none focus:outline-none text-slate-700 leading-relaxed"
                     placeholder="Start typing your note... (Markdown supported)"
                   />
                 )
               ) : (
-                <div className="h-full flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
                     <svg className="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
